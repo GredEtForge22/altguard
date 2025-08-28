@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Vérification AltGuard</title>
+</head>
+<body>
+<h1>Vérification AltGuard</h1>
+<p>Token : <span id="token"></span></p>
+<p id="status">Vérification en cours...</p>
+
+<script>
+  // Récupère le token depuis l'URL
+  const path = window.location.pathname.split("/");
+  const token = path[path.length - 1];
+  document.getElementById("token").textContent = token;
+
+  // Récupère l'IP publique côté client
+  async function getIP() {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      return data.ip;
+    } catch {
+      return "IP inconnue";
+    }
+  }
+
+  (async () => {
+    const ip = await getIP();
+
+    // Appel à ton backend
+    fetch(`https://ton-backend.com/verify/${token}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ device_id: "web", ip: ip })
+    })
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById("status").textContent = data;
+    })
+    .catch(err => {
+      document.getElementById("status").textContent = "Erreur lors de la vérification";
+      console.error(err);
+    });
+  })();
+</script>
+</body>
+</html>

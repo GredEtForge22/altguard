@@ -1,40 +1,33 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>AltGuard Verify</title>
+<meta charset="UTF-8">
+<title>Vérification AltGuard</title>
 </head>
 <body>
-  <h1>Vérification de compte</h1>
-  <p id="status">Chargement…</p>
+<h1>Vérification de compte</h1>
+<p id="status">Vérification en cours...</p>
 
-  <script>
-    // Récupérer le token depuis la query string
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-
-    if (!token) {
-      document.getElementById('status').textContent = "Token manquant !";
-    } else {
-      // Exemple de POST vers ton serveur Python aiohttp
-      fetch('https://ton-serveur-python.com/verify/' + token, {
-        method: 'POST',
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get("token");
+if (!token) {
+    document.getElementById("status").innerText = "Token manquant !";
+} else {
+    fetch(`https://<ton-repl>.repl.co/verify/${token}`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+            "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          device_id: 'web_' + Math.random().toString(36).substring(2),
-          // tu peux ajouter d'autres infos si tu veux
+            device_id: "web",
+            extra_info: "visiteur github pages"
         })
-      })
-      .then(res => res.text())
-      .then(txt => {
-        document.getElementById('status').textContent = txt;
-      })
-      .catch(err => {
-        document.getElementById('status').textContent = "Erreur: " + err;
-      });
-    }
-  </script>
+    })
+    .then(res => res.text())
+    .then(txt => document.getElementById("status").innerText = txt)
+    .catch(err => document.getElementById("status").innerText = "Erreur réseau : " + err);
+}
+</script>
 </body>
 </html>

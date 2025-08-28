@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AltGuard Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+    table { border-collapse: collapse; width: 100%; background: #fff; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #333; color: white; }
+    h1 { text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>AltGuard Dashboard</h1>
+  <button onclick="fetchData()">Actualiser</button>
+  <table>
+    <thead>
+      <tr>
+        <th>Utilisateur</th>
+        <th>Serveur</th>
+        <th>Score</th>
+        <th>Raisons</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="altTableBody">
+    </tbody>
+  </table>
+
+  <script>
+    const API_URL = "https://TON_DOMAINE/export_json"; // Remplace par ton serveur
+
+    async function fetchData() {
+      const tbody = document.getElementById("altTableBody");
+      tbody.innerHTML = "<tr><td colspan='5'>Chargement...</td></tr>";
+
+      try {
+        const res = await fetch(API_URL, {
+          headers: { "X-ADMIN-KEY": "admin_secret_key" } // Même clé que pour le bot
+        });
+        const data = await res.json();
+        const alerts = data.alt_alerts.sort((a,b) => new Date(b.alert_time) - new Date(a.alert_time));
+
+        tbody.innerHTML = "";
+        alerts.forEach(alert => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${alert.user_id}</td>
+            <td>${alert.guild_id}</td>
+            <td>${(alert.score*100).toFixed(0)}%</td>
+            <td>${alert.reason.join(", ")}</td>
+            <td>${alert.alert_time}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch(err) {
+        tbody.innerHTML = `<tr><td colspan="5">Erreur : ${err}</td></tr>`;
+      }
+    }
+
+    // Chargement initial
+    fetchData();
+  </script>
+</body>
+</html>

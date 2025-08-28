@@ -1,49 +1,40 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Vérification AltGuard</title>
+  <meta charset="UTF-8">
+  <title>AltGuard Verify</title>
 </head>
 <body>
-<h1>Vérification AltGuard</h1>
-<p>Token : <span id="token"></span></p>
-<p id="status">Vérification en cours...</p>
+  <h1>Vérification de compte</h1>
+  <p id="status">Chargement…</p>
 
-<script>
-  // Récupère le token depuis l'URL
-  const path = window.location.pathname.split("/");
-  const token = path[path.length - 1];
-  document.getElementById("token").textContent = token;
+  <script>
+    // Récupérer le token depuis la query string
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
 
-  // Récupère l'IP publique côté client
-  async function getIP() {
-    try {
-      const res = await fetch("https://api.ipify.org?format=json");
-      const data = await res.json();
-      return data.ip;
-    } catch {
-      return "IP inconnue";
+    if (!token) {
+      document.getElementById('status').textContent = "Token manquant !";
+    } else {
+      // Exemple de POST vers ton serveur Python aiohttp
+      fetch('https://ton-serveur-python.com/verify/' + token, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          device_id: 'web_' + Math.random().toString(36).substring(2),
+          // tu peux ajouter d'autres infos si tu veux
+        })
+      })
+      .then(res => res.text())
+      .then(txt => {
+        document.getElementById('status').textContent = txt;
+      })
+      .catch(err => {
+        document.getElementById('status').textContent = "Erreur: " + err;
+      });
     }
-  }
-
-  (async () => {
-    const ip = await getIP();
-
-    // Appel à ton backend
-    fetch(`https://ton-backend.com/verify/${token}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ device_id: "web", ip: ip })
-    })
-    .then(res => res.text())
-    .then(data => {
-      document.getElementById("status").textContent = data;
-    })
-    .catch(err => {
-      document.getElementById("status").textContent = "Erreur lors de la vérification";
-      console.error(err);
-    });
-  })();
-</script>
+  </script>
 </body>
 </html>
